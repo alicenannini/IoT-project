@@ -72,7 +72,6 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
   
   // (seconds since Jan 1, 1970)
   unsigned long timestamp = (unsigned long)time(NULL);	
-  LOG_DBG("timestamp: %lu\n",timestamp);
   
   unsigned int accept = -1;
   coap_get_header_accept(request, &accept);

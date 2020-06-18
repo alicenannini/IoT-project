@@ -26,7 +26,6 @@ static double collect_data() {
 	
 	/* generating a float in range lowerBound to upperBound */
 	double delta = ((double)(random_rand()%(int)((upperBound-lowerBound)*maxValue)))/maxValue + lowerBound; 
-	LOG_DBG("delta: %f\n",delta);
 	/* adding the delta to the old value to generate a realistic new value */
 	double light = light_value + delta ; //float in range 0 to 100
 	return light;
@@ -57,7 +56,6 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
   light_value = collect_data();
   // (seconds since Jan 1, 1970)
   unsigned long timestamp = (unsigned long)time(NULL);	
-  LOG_DBG("timestamp: %lu\n",timestamp);
 
   unsigned int accept = -1;
   coap_get_header_accept(request, &accept);
