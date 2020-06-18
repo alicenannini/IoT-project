@@ -15,7 +15,7 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 public class Main {
 	
 	public static List<NodeResource> nodeResources = new ArrayList<NodeResource>();
-	public static final String[] commands = {"resources","ON","OFF","sensors","observe","actuators","stop observing"};
+	public static final String[] commands = {"resources","ON","OFF","sensors","observe","actuators","stop observing","exit"};
 	public static List<ObservingClient> obsClients = new ArrayList<ObservingClient>();
 	
 	public static void main(String[] args) throws IOException, InterruptedException {
@@ -61,14 +61,16 @@ public class Main {
 		        	showResourcesStatus(commands[5]);
 		        }else if(newCommand.contains(commands[1])) {
 		        	// switching ON the status of chosen bulb actuator
-		        	int index = Integer.parseInt(newCommand.split(" ")[1]) - 1;
+		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
 		        	NodeResource r = nodeResources.get(index);
 		        	switchBulbMode(commands[1],r);
 		        }else if(newCommand.contains(commands[2])) {
 		        	// switching OFF the status of chosen bulb actuator
-		        	int index = Integer.parseInt(newCommand.split(" ")[1]) - 1;
+		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
 		        	NodeResource r = nodeResources.get(index);
 		        	switchBulbMode(commands[2],r);
+		        }else if(newCommand.contentEquals(commands[7])) {
+		        	System.exit(0);
 		        }else {
 		        	showCommandList();
 		        }
@@ -86,7 +88,7 @@ public class Main {
 		System.out.println("INDEX - RESOURCE INFO");
 		for(int i = 0; i < nodeResources.size(); i++) {
 			NodeResource r = nodeResources.get(i);
-        	System.out.println("("+(i+1)+")\t"+r.toString());
+        	System.out.println("("+i+")\t"+r.toString());
 		}
 	}
 	
@@ -167,6 +169,7 @@ public class Main {
 		System.out.println("\""+commands[2]+" $index\"\t\t-> to switch off the bulb at the corresponding index");
 		System.out.println("\""+commands[3]+"\"\t\t-> to print the status of all available sensors");
 		System.out.println("\""+commands[5]+"\"\t\t-> to print the status of all available actuators");
+		System.out.println("\""+commands[7]+"\"\t\t\t-> to close the application");
 		System.out.println("");
 	}
 

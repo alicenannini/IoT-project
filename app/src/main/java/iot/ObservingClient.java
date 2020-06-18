@@ -4,21 +4,29 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapObserveRelation;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
-public class ObservingClient extends Thread {
+public class ObservingClient extends CoapClient {
 	private NodeResource r;
-	private CoapClient client;
 	CoapObserveRelation relation;
 	
 	public ObservingClient(NodeResource r) {
-		super();
+		super(r.getCoapURI());
 		this.r = r;
 	}
 	
-	public void run() {
-    	//System.out.println(r.toString());
-    	this.client = new CoapClient(r.getCoapURI());
-		relation = client.observe(new ObservingHandler(this.r), MediaTypeRegistry.APPLICATION_JSON);
+	public void start() {
+    	relation = this.observe(new ObservingHandler(this.r), MediaTypeRegistry.APPLICATION_JSON);
 		System.out.println("Start observing "+r.toString());
+		new Thread() {
+			public void run() {
+				while(true) {
+					try {
+						sleep(10000);
+						relation.reregister();
+						System.out.println("Reregister "+r.toString());
+					} catch (InterruptedException e) { e.printStackTrace(); }
+				}
+			}
+		};
 	}
 	
 	public void stopObserving() {

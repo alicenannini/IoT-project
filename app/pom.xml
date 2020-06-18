@@ -74,7 +74,7 @@
   				<archive>
   					<manifest>
   						<addClasspath>true</addClasspath>
-  						<mainClass>iot.server.MyServer</mainClass>
+  						<mainClass>iot.server.Main</mainClass>
   						<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
   					</manifest>
   				</archive>

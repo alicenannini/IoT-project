@@ -6,6 +6,7 @@ import java.util.Map;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -22,10 +23,8 @@ public class ObservingHandler implements CoapHandler {
 		try {
 			String value; 
 	        Timestamp timestamp;
-	        
-			JSONParser parser = new JSONParser();
-			JSONObject jo = (JSONObject) parser.parse(response.getResponseText());
-	        // getting light value and timestamp and value
+	        JSONObject jo = (JSONObject) JSONValue.parseWithException(response.getResponseText());
+			// getting light value and timestamp and value
 			if( jo.containsKey("timestamp") )
 	        	timestamp = new Timestamp(((Long) jo.get("timestamp"))*1000); 
 	        else {
