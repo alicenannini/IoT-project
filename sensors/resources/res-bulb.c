@@ -1,6 +1,7 @@
 #include "contiki.h"
 #include "coap-engine.h"
 #include <string.h>
+#include "time.h"
 
 /* Log configuration */
 #include "sys/log.h"
@@ -28,6 +29,11 @@ static int32_t obs_counter = 0;
 
 static void res_post_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
+
+	if(request != NULL) {
+    LOG_DBG("Received POST/PUT\n");
+  }
+  
   size_t len = 0;
   const char *mode = NULL;
   int success = 1;
@@ -61,27 +67,31 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
 {
   /* Keep server log clean from ticking events */
   if(request != NULL) {
-    LOG_DBG("/obs            GET\n");
+    LOG_DBG("Received GET\n");
   }
+  
+  // (seconds since Jan 1, 1970)
+  unsigned long timestamp = (unsigned long)time(NULL);	
+  LOG_DBG("timestamp: %lu\n",timestamp);
   
   unsigned int accept = -1;
   coap_get_header_accept(request, &accept);
 
   if(accept == -1 || accept == TEXT_PLAIN) {
     coap_set_header_content_format(response, TEXT_PLAIN);
-    snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "%d", bulb_mode);
+    snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "mode=%d,timestamp=%lu", bulb_mode, timestamp);
 
     coap_set_payload(response, (uint8_t *)buffer, strlen((char *)buffer));
     
   } else if(accept == APPLICATION_XML) {
     coap_set_header_content_format(response, APPLICATION_XML);
-    snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "<mode=\"%d\"/>", bulb_mode);
+    snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "<mode=\"%d\"/><timestamp=\"%lu\"/>", bulb_mode, timestamp);
 
     coap_set_payload(response, buffer, strlen((char *)buffer));
     
   } else if(accept == APPLICATION_JSON) {
     coap_set_header_content_format(response, APPLICATION_JSON);
-    snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "{'mode':%d}", bulb_mode);
+    snprintf((char *)buffer, COAP_MAX_CHUNK_SIZE, "{\"mode\":%d,\"timestamp\":%lu}", bulb_mode, timestamp);
 
     coap_set_payload(response, buffer, strlen((char *)buffer));
     

@@ -20,13 +20,13 @@ static int32_t obs_counter = 0;
 /* Function to randomly generate a simulated value of the sensor */
 static double collect_data() {
 	double maxValue = 100.00;
-	double e = 10.0;
+	double e = 15.0;
 	double lowerBound = ((light_value-e) < 0)? 0 : (-e);
 	double upperBound = ((light_value+e) > maxValue)? (light_value+e-maxValue) : (e);
 	
 	/* generating a float in range lowerBound to upperBound */
 	double delta = ((double)(random_rand()%(int)((upperBound-lowerBound)*maxValue)))/maxValue + lowerBound; 
-	LOG_DBG("delta: %f ",delta);
+	LOG_DBG("delta: %f\n",delta);
 	/* adding the delta to the old value to generate a realistic new value */
 	double light = light_value + delta ; //float in range 0 to 100
 	return light;
@@ -51,10 +51,10 @@ static void res_get_handler(coap_message_t *request, coap_message_t *response, u
 {
   /* Keep server log clean from ticking events */
   if(request != NULL) {
-    LOG_DBG("/obs            GET\n");
+    LOG_DBG("Received GET\n");
   }
   
-  double light_value = collect_data();
+  light_value = collect_data();
   // (seconds since Jan 1, 1970)
   unsigned long timestamp = (unsigned long)time(NULL);	
   LOG_DBG("timestamp: %lu\n",timestamp);
