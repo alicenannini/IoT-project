@@ -20,21 +20,43 @@ public class ObservingHandler implements CoapHandler {
 	
 	public void onLoad(CoapResponse response) {
 		try {
+			String value; 
+	        Timestamp timestamp;
+	        
+			JSONParser parser = new JSONParser();
+			JSONObject jo = (JSONObject) parser.parse(response.getResponseText());
+	        // getting light value and timestamp and value
+			if( jo.containsKey("timestamp") )
+	        	timestamp = new Timestamp(((Long) jo.get("timestamp"))*1000); 
+	        else {
+	        	System.err.println("Can't find timestamp value");
+	        	return;
+	        }
+			
 			if(resource.getPath().contains("sensor")) {
-				Object obj = new JSONParser().parse(response.getResponseText());
-				// typecasting obj to JSONObject 
-		        JSONObject jo = (JSONObject) obj; 
-		        // getting firstName and lastName 
-		        Double light_value = (Double)jo.get("light"); 
-		        Timestamp timestamp = new Timestamp(((Long) jo.get("timestamp"))*1000); 
-		        
-				//System.out.println(response.advanced().getSource().toString()+": "+timestamp+", light "+light_value);
-				
-				Map<Timestamp,Double> resourceValues = resource.getValues();
-				resourceValues.put(timestamp, light_value);
-				Main.nodeResources.get(Main.nodeResources.indexOf(resource)).setValues(resourceValues);
-		        
+				if( jo.containsKey("light") )
+					value = jo.get("light").toString(); 
+				else {
+					System.err.println("Can't find light value");
+					return;
+				}		        
+			}else if(resource.getPath().contains("actuators")) {
+				if( jo.containsKey("mode") )
+					value = jo.get("mode").toString(); 
+				else {
+					System.err.println("Can't find mode value");
+					return;
+				}	
+			}else {
+				System.err.println("Can't find node type");
+				return;
 			}
+			
+			//System.out.println(response.advanced().getSource().toString()+": "+ timestamp +", light "+value);
+			
+			Map<Timestamp,String> resourceValues = resource.getValues();
+			resourceValues.put(timestamp, value);
+			Main.nodeResources.get(Main.nodeResources.indexOf(resource)).setValues(resourceValues);
 			
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block

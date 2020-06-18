@@ -1,14 +1,14 @@
 package iot;
 
 import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class NodeResource {
 	private String path;
 	private String name;
 	private String nodeAddress;
-	private Map<Timestamp,Double> values = new HashMap<Timestamp,Double>();
+	private Map<Timestamp,String> values = new TreeMap<Timestamp,String>();
 	
 	public NodeResource(String p, String n, String a) {
 		this.path = p;
@@ -22,7 +22,17 @@ public class NodeResource {
 	
 	public void setNodeAddress(String a) { this.nodeAddress = a; }
 	
-	public void setValues(Map<Timestamp,Double> v) { this.values = v; }
+	public void setValues(Map<Timestamp,String> v) { 
+		// first remove from the list all values before the last hour
+		long lastHour = System.currentTimeMillis() - 36000000;
+		for(Timestamp key : v.keySet()) {
+			   if( key.getTime() < lastHour) {
+			       v.remove(key);
+			   }
+		}
+		// then update the list of the class
+		this.values = v; 
+	}
 	
 	public String getPath() { return this.path; }
 	
@@ -30,14 +40,15 @@ public class NodeResource {
 	
 	public String getNodeAddress() { return this.nodeAddress; }
 	
-	public Map<Timestamp,Double> getValues(){ return this.values; }
+	public Map<Timestamp,String> getValues(){ return this.values; }
 	
 	public String getCoapURI() { return "coap://["+this.nodeAddress+"]:5683/"+this.path; }
 	
 	@Override
 	public String toString() {
-		return "Node: "+this.nodeAddress+", Path: "+this.path;
-		//return "Path:\""+this.path+"\", Name:"+this.name+", Node:"+this.nodeAddress;
+		return "Node "+ this.nodeAddress.substring(this.nodeAddress.length()-1) +" "+ this.path;
+		//return "Node: "+this.nodeAddress+", Path: "+this.path;
+		//return "Node: "+this.nodeAddress+", Path: "+this.path+", Name:"+this.name;
 	}
 	
 	public boolean equals(String path, String nodeAddress) {
