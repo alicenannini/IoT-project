@@ -9,6 +9,8 @@ MODULES_REL += $(TARGET)
 
 # Include CoAP resources
 MODULES_REL += ./resources
+# Include node components
+MODULES_REL += ./dev
 
 # Include the CoAP implementation
 include $(CONTIKI)/Makefile.dir-variables
