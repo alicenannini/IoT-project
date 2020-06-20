@@ -24,7 +24,7 @@ public class NodeResource {
 	
 	public void setValues(Map<Timestamp,String> v) { 
 		// first remove from the list all values before the last hour
-		long lastHour = System.currentTimeMillis() - 36000000;
+		long lastHour = System.currentTimeMillis() - (60000 * 10);
 		for(Timestamp key : v.keySet()) {
 			   if( key.getTime() < lastHour) {
 			       v.remove(key);
@@ -46,7 +46,8 @@ public class NodeResource {
 	
 	@Override
 	public String toString() {
-		return "Node "+ this.nodeAddress.substring(this.nodeAddress.length()-1) +" "+ this.path;
+		String[] addr = this.nodeAddress.split(":");
+		return "Node "+ addr[addr.length-1] +" "+ this.path;
 		//return "Node: "+this.nodeAddress+", Path: "+this.path;
 		//return "Node: "+this.nodeAddress+", Path: "+this.path+", Name:"+this.name;
 	}

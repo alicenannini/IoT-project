@@ -15,7 +15,7 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 public class Main {
 	
 	public static List<NodeResource> nodeResources = new ArrayList<NodeResource>();
-	public static final String[] commands = {"resources","ON","OFF","sensors","AUTO","actuators","MANUAL","exit"};
+	public static final String[] commands = {"resources","ON","OFF","sensor","AUTO","actuator","MANUAL","exit"};
 	public static List<ObservingClient> obsClients = new ArrayList<ObservingClient>();
 	
 	public static void main(String[] args) throws IOException, InterruptedException {
@@ -39,22 +39,50 @@ public class Main {
 		        if(newCommand.contentEquals(commands[0])) {
 		        	// showing available resources
 		        	showAvailableResources();
-		        }else if(newCommand.contentEquals(commands[3])) {
-		        	// showing the status of observated sensors
-		        	showResourcesStatus(commands[3]);
-		        }else if(newCommand.contentEquals(commands[5])) {
+		        }else if(newCommand.contains(commands[3])) {
+		        	// showing the status of observed sensors
+		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
+		        	if(index >= 0) {
+			        	NodeResource r = nodeResources.get(index);
+			        	showResourcesStatus(commands[3], r);
+		        	}else {
+		        		for(NodeResource r : nodeResources)
+		        			showResourcesStatus(commands[3], r);
+		        	}
+		        }else if(newCommand.contains(commands[5])) {
 		        	// showing the status of observed actuators
-		        	showResourcesStatus(commands[5]);
+		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
+		        	if(index >= 0) {
+			        	NodeResource r = nodeResources.get(index);
+			        	showResourcesStatus(commands[5], r);
+		        	}else {
+		        		for(NodeResource r : nodeResources)
+		        			showResourcesStatus(commands[5], r);
+		        	}
 		        }else if(newCommand.contains(commands[1])) {
 		        	// switching ON the status of chosen bulb actuator
 		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
-		        	NodeResource r = nodeResources.get(index);
-		        	switchBulbMode(commands[1],"mode",r);
+		        	if(index >= 0) {
+			        	NodeResource r = nodeResources.get(index);
+			        	switchBulbMode(commands[1],"mode",r);
+		        	}else {
+		        		for(NodeResource r : nodeResources)
+		        			if(r.getPath().contains("actuator"))
+		        				switchBulbMode(commands[1],"mode",r);
+		        			else System.err.println("This is not an actuator");
+		        	}
 		        }else if(newCommand.contains(commands[2])) {
 		        	// switching OFF the status of chosen bulb actuator
 		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
-		        	NodeResource r = nodeResources.get(index);
-		        	switchBulbMode(commands[2],"mode",r);
+		        	if(index >= 0) {
+			        	NodeResource r = nodeResources.get(index);
+			        	switchBulbMode(commands[2],"mode",r);
+		        	}else {
+		        		for(NodeResource r : nodeResources)
+		        			if(r.getPath().contains("actuator"))
+		        				switchBulbMode(commands[2],"mode",r);
+		        			else System.err.println("This is not an actuator");
+		        	}
 		        }else if(newCommand.contains(commands[4])) {
 		        	// switching bulb actuator in automatic mode
 		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
@@ -65,6 +93,7 @@ public class Main {
 		        		for(NodeResource r : nodeResources)
 		        			if(r.getPath().contains("actuator"))
 		        				switchBulbMode(commands[1],"automatic",r);
+		        			else System.err.println("This is not an actuator");
 		        	}
 		        }else if(newCommand.contains(commands[6])) {
 		        	// switching bulb actuator in manual mode
@@ -76,6 +105,7 @@ public class Main {
 		        		for(NodeResource r : nodeResources)
 		        			if(r.getPath().contains("actuator"))
 		        				switchBulbMode(commands[2],"automatic",r);
+		        			else System.err.println("This is not an actuator");
 		        	}
 		        }else if(newCommand.contentEquals(commands[7])) {
 		        	System.exit(0);
@@ -127,32 +157,31 @@ public class Main {
 	
 	
 	
-	public static void showResourcesStatus(String nodeType) {
-		for(NodeResource r : nodeResources) {
-			if(r.getPath().contains(nodeType)) {
-				int index = nodeResources.indexOf(r);
-				System.out.print("("+index+") "+r.toString());
-				System.out.println("\tTIMESTAMP\t\tVALUE");
-				Map<Timestamp,String> v = r.getValues();
-				for(Timestamp key : v.keySet()) {
-					System.out.println("\t\t\t\t"+key + "   " + v.get(key));
-				}
-				System.out.println("");
+	public static void showResourcesStatus(String nodeType, NodeResource r) {
+		if(r.getPath().contains(nodeType)) {
+			int index = nodeResources.indexOf(r);
+			System.out.print("("+index+") "+r.toString());
+			System.out.println("\tTIMESTAMP\t\tVALUE");
+			Map<Timestamp,String> v = r.getValues();
+			for(Timestamp key : v.keySet()) {
+				System.out.println("\t\t\t\t"+key + "   " + v.get(key));
 			}
+			System.out.println("");
 		}
 	}
+	
 	
 	
 	public static void showCommandList() {
         System.out.println("----------------------------------------------------------------------------------------------------------------\n");
 		System.out.println("TYPE ONE OF THE FOLLOWING COMMANDS AND PRESS ENTER:");
 		System.out.println("\""+commands[0]+"\"\t\t-> to get the available resources and their addresses");
-		System.out.println("\""+commands[1]+" $index\"\t\t-> to switch on the bulb at the corresponding index");
-		System.out.println("\""+commands[2]+" $index\"\t\t-> to switch off the bulb at the corresponding index");
+		System.out.println("\""+commands[1]+" $index\"\t\t-> to switch on the bulb at the corresponding index (-1 for all bulbs)");
+		System.out.println("\""+commands[2]+" $index\"\t\t-> to switch off the bulb at the corresponding index (-1 for all bulbs)");
 		System.out.println("\""+commands[4]+" $index\"\t\t-> to automate the bulb at the corresponding index (-1 for all bulbs)");
 		System.out.println("\""+commands[6]+" $index\"\t\t-> to disable automatic mode for the bulb at the corresponding index (-1 for all bulbs)");
-		System.out.println("\""+commands[3]+"\"\t\t-> to print the status of all available sensors");
-		System.out.println("\""+commands[5]+"\"\t\t-> to print the status of all available actuators");
+		System.out.println("\""+commands[3]+" $index\"\t\t-> to print the status of the $index sensor (-1 for all sensors)");
+		System.out.println("\""+commands[5]+" $index\"\t-> to print the status of the $index actuator (-1 for all actuators)");
 		System.out.println("\""+commands[7]+"\"\t\t\t-> to close the application");
 		System.out.println("");
 	}
