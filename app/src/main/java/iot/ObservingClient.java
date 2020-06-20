@@ -20,7 +20,8 @@ public class ObservingClient extends CoapClient {
 			public void run() {
 				while(true) {
 					try {
-						sleep(10000);
+						// sleep 1 hour and then refresh the observe relation
+						sleep(3600*1000);
 						relation.reregister();
 						System.out.println("Reregister "+r.toString());
 					} catch (InterruptedException e) { e.printStackTrace(); }
