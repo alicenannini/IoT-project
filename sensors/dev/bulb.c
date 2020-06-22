@@ -1,10 +1,11 @@
 #include "bulb.h"
 #include "contiki.h"
 #include <stdbool.h>
+#include <stdio.h>
 
 static bool automatic = 1;
 static bool BULB = 0;
-process_event_t AUTOMATIC_BULB_EVENT = NULL;
+process_event_t AUTOMATIC_BULB_EVENT ;
 /* Node process */
 extern struct process node_process;
 
@@ -52,7 +53,7 @@ void set_bulb_automatic(){
 
 	automatic = 1;
 	process_post(&node_process,AUTOMATIC_BULB_EVENT,NULL);
-
+	
 }
 
 void set_bulb_manual(){

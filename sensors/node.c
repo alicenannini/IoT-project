@@ -11,8 +11,8 @@
 #define LOG_MODULE "NODE"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
-/* Interval for retrying registration */
-#define REGISTRATION_INTERVAL		(5 * CLOCK_SECOND)
+/* Interval for checking resources status */
+#define INTERVAL		(10 * CLOCK_SECOND)
 
 /* Resource definition */
 extern coap_resource_t res_light;
@@ -25,9 +25,8 @@ extern process_event_t AUTOMATIC_BULB_EVENT;
 
 /* Server IP and resource path */
 #define SERVER_EP "coap://[fd00::1]:4456"
-#define NUMBER_OF_URLS 4
-char *service_urls[NUMBER_OF_URLS] =
-{ "sensors/light", "actuators/bulb" };
+char* service_url = "/registration";
+
 
 /*---------------------------------------------------------------------------*/
 PROCESS(node_process, "Sensor node");
@@ -37,7 +36,7 @@ AUTOSTART_PROCESSES(&node_process);
 void client_chunk_handler(coap_message_t *response)
 {
   if(response == NULL) {
-    LOG_INFO("Request timed out");
+    LOG_INFO("Request timed out\n");
     return;
   }
 	
@@ -49,7 +48,7 @@ PROCESS_THREAD(node_process, ev, data){
   static struct etimer timer;
   /* Endpoint and message definition */
   static coap_endpoint_t server_ep;
-	static coap_message_t request[1];
+	static coap_message_t request[1]; // packet treated as pointer
 	
 	/* Initialize the status of the bulb component */
 	init_bulb();
@@ -57,15 +56,15 @@ PROCESS_THREAD(node_process, ev, data){
 	
 	
 	/* Resource activation */
-	coap_activate_resource(&res_light,service_urls[0]); //sensor
-	coap_activate_resource(&res_bulb,service_urls[1]);  //actuator
+	coap_activate_resource(&res_light,"sensors/light"); //sensor
+	coap_activate_resource(&res_bulb,"actuators/bulb");  //actuator
 
   /* Populate the coap_endpoint_t data structure */
 	coap_endpoint_parse(SERVER_EP, strlen(SERVER_EP), &server_ep);
 	
   /* Prepare the message */
 	coap_init_message(request, COAP_TYPE_CON, COAP_GET, 0);
-	coap_set_header_uri_path(request, "registration");
+	coap_set_header_uri_path(request, service_url);
 	/* Issue the request in a blocking manner
 		The client will wait for the server to reply (or the transmission to timeout) */
 	COAP_BLOCKING_REQUEST(&server_ep, request, client_chunk_handler);
@@ -74,7 +73,7 @@ PROCESS_THREAD(node_process, ev, data){
 		
 			while(bulb_is_automatic()){
 				/* Timer activation */
-				etimer_set(&timer, REGISTRATION_INTERVAL);
+				etimer_set(&timer, INTERVAL);
 		
 				/* Periodically check the light status
 					If it's down a THRESHOLD then switch ON the bulb, and viceversa */
@@ -83,13 +82,14 @@ PROCESS_THREAD(node_process, ev, data){
 				else if(light_is_over_threshold() && bulb_is_on())
 					switch_bulb_off();
 				
-				/* Wait for the periodic timer to expire and then restart the timer. */
+				/* Wait for the periodic timer to expire */
 				PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
-				//etimer_reset(&timer);
+				
 				
 			} // while bulb is automatic
 			// wait that bulb is setted in automatic mode
-			PROCESS_WAIT_EVENT_UNTIL(ev == AUTOMATIC_BULB_EVENT);
+			PROCESS_WAIT_EVENT();
+			//PROCESS_WAIT_EVENT_UNTIL(ev == AUTOMATIC_BULB_EVENT);
 	}
 
   PROCESS_END();

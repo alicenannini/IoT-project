@@ -36,7 +36,6 @@ static void res_post_put_handler(coap_message_t *request, coap_message_t *respon
 
 	if(request != NULL) {
     LOG_DBG("Received POST/PUT\n");
-    LOG_DBG("%s\n",(char*)request);
   }
   
   size_t len = 0;
@@ -48,10 +47,8 @@ static void res_post_put_handler(coap_message_t *request, coap_message_t *respon
 
     if(strncmp(mode, "ON", len) == 0) {
     	switch_bulb_on();
-      //LOG_DBG("Light on!\n");
     } else if(strncmp(mode, "OFF", len) == 0) {
     	switch_bulb_off();
-      //LOG_DBG("Light off\n");
     } else {
       success = 0;
     }
