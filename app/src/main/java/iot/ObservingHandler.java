@@ -8,15 +8,14 @@ import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class ObservingHandler implements CoapHandler {
-	private NodeResource resource;
+	private ObservingClient client;
 	
-	public ObservingHandler(NodeResource r) {
+	public ObservingHandler(ObservingClient c) {
 		super();
-		this.resource = r;
+		this.client = c;
 	}
 	
 	
@@ -24,9 +23,14 @@ public class ObservingHandler implements CoapHandler {
 		try {
 			String code = response.getCode().toString();
 			if(code.startsWith("2"))
-				addResourceFromJsonMsg(response.getResponseText());
+				if(response.getOptions().getAccept() == MediaTypeRegistry.APPLICATION_JSON
+						|| response.getOptions().getAccept() == MediaTypeRegistry.UNDEFINED) 
+					addResourceFromJsonMsg(response.getResponseText());
+				else if (response.getOptions().getAccept() == MediaTypeRegistry.TEXT_PLAIN)
+					addResourceFromTextMsg(response.getResponseText());
+				else System.err.println("[ERROR OBS] Accept option not supported");
 			else {
-				System.err.println("ERROR: response code "+code);
+				System.err.println("[ERROR OBS] Response Code "+code);
 			}
 			
 		} catch (ParseException e) {
@@ -38,8 +42,7 @@ public class ObservingHandler implements CoapHandler {
 	}
 
 	public void onError() {
-		System.err.println("-Observing Failed--------");
-		
+		System.err.println("-Observing Failed --> "+client.getResource().toString());
 	}
 	
 	private void addResourceFromJsonMsg(String response) throws ParseException {
@@ -54,14 +57,14 @@ public class ObservingHandler implements CoapHandler {
         	return;
         }
 		
-		if(resource.getPath().contains("sensor")) {
+		if(client.getResource().getPath().contains("sensor")) {
 			if( jo.containsKey("light") )
 				value = jo.get("light").toString(); 
 			else {
 				System.err.println("Can't find light value");
 				return;
 			}		        
-		}else if(resource.getPath().contains("actuators")) {
+		}else if(client.getResource().getPath().contains("actuators")) {
 			if( jo.containsKey("mode") )
 				value = jo.get("mode").toString(); 
 			else {
@@ -75,9 +78,9 @@ public class ObservingHandler implements CoapHandler {
 		
 		//System.out.println(response.advanced().getSource().toString()+": "+ timestamp +", light "+value);
 		
-		Map<Timestamp,String> resourceValues = resource.getValues();
+		Map<Timestamp,String> resourceValues = client.getResource().getValues();
 		resourceValues.put(timestamp, value);
-		Main.nodeResources.get(Main.nodeResources.indexOf(resource)).setValues(resourceValues);
+		Main.nodeResources.get(Main.nodeResources.indexOf(client.getResource())).setValues(resourceValues);
 	}
 	
 	private void addResourceFromTextMsg(String response) {
@@ -85,14 +88,14 @@ public class ObservingHandler implements CoapHandler {
         Timestamp timestamp;
         
         String[] maps = response.split(",");
-        if(resource.getPath().contains("sensor")) {
+        if(client.getResource().getPath().contains("sensor")) {
         	if(maps[0].contentEquals("light"))
         		value = maps[0].split("=")[1];
         	else {
 				System.err.println("Can't find light value");
 				return;
 			}		
-        }else if(resource.getPath().contains("actuators")) {
+        }else if(client.getResource().getPath().contains("actuators")) {
         	if(maps[0].contentEquals("mode"))
         		value = maps[0].split("=")[1];
         	else {
@@ -113,9 +116,9 @@ public class ObservingHandler implements CoapHandler {
         
         //System.out.println(response.advanced().getSource().toString()+": "+ timestamp +", light "+value);
 		
-  		Map<Timestamp,String> resourceValues = resource.getValues();
+  		Map<Timestamp,String> resourceValues = client.getResource().getValues();
   		resourceValues.put(timestamp, value);
-  		Main.nodeResources.get(Main.nodeResources.indexOf(resource)).setValues(resourceValues);
+  		Main.nodeResources.get(Main.nodeResources.indexOf(client.getResource())).setValues(resourceValues);
         
 	}
 

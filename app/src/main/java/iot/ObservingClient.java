@@ -14,7 +14,7 @@ public class ObservingClient extends CoapClient {
 	}
 	
 	public void start() {
-    	relation = this.observe(new ObservingHandler(this.r), MediaTypeRegistry.APPLICATION_JSON);
+    	relation = this.observe(new ObservingHandler(this), MediaTypeRegistry.APPLICATION_JSON);
 		System.out.println("Start observing "+r.toString());
 		new Thread() {
 			public void run() {

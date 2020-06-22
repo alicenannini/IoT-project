@@ -23,7 +23,7 @@ public class NodeResource {
 	public void setNodeAddress(String a) { this.nodeAddress = a; }
 	
 	public void setValues(Map<Timestamp,String> v) { 
-		// first remove from the list all values before the last hour
+		// first remove from the list all values before the last 10 minutes
 		long lastHour = System.currentTimeMillis() - (60000 * 10);
 		for(Timestamp key : v.keySet()) {
 			   if( key.getTime() < lastHour) {
@@ -48,12 +48,16 @@ public class NodeResource {
 	public String toString() {
 		String[] addr = this.nodeAddress.split(":");
 		return "Node "+ addr[addr.length-1] +" "+ this.path;
-		//return "Node: "+this.nodeAddress+", Path: "+this.path;
-		//return "Node: "+this.nodeAddress+", Path: "+this.path+", Name:"+this.name;
 	}
 	
-	public boolean equals(String path, String nodeAddress) {
-		return (this.path.equals(path) && this.nodeAddress.equals(nodeAddress));
+	public String toDetailedString() {
+		return "Node: "+this.nodeAddress+", Path: "+this.path+", Name:"+this.name;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		NodeResource n = (NodeResource) o;
+		return (this.path.equals(n.path) && this.nodeAddress.equals(n.nodeAddress));
 	}
 	
 }

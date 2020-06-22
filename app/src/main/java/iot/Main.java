@@ -15,8 +15,8 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 public class Main {
 	
 	public static List<NodeResource> nodeResources = new ArrayList<NodeResource>();
-	public static final String[] commands = {"resources","ON","OFF","sensor","AUTO","actuator","MANUAL","exit"};
 	public static List<ObservingClient> obsClients = new ArrayList<ObservingClient>();
+	public static final String[] commands = {"resources","ON","OFF","sensor","AUTO","actuator","MANUAL","exit"};
 	
 	public static void main(String[] args) throws IOException, InterruptedException {
 		
@@ -28,7 +28,7 @@ public class Main {
 			}
 		}.start();
 	
-		
+		/* Preparing to start a loop to read from command line and execute some actions on the nodes */
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		showCommandList();
 		
@@ -36,78 +36,82 @@ public class Main {
 			try{
 				String newCommand = br.readLine();
 		        
+				// Printing a warning if there aren't registered resources yet
+				if(nodeResources.size() == 0)
+					System.out.println("[WARNING] No registered resources yet");
+				
 		        if(newCommand.contentEquals(commands[0])) {
 		        	// showing available resources
 		        	showAvailableResources();
 		        }else if(newCommand.contains(commands[3])) {
 		        	// showing the status of observed sensors
-		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
+		        	int index = checkIndex(newCommand);
 		        	if(index >= 0) {
 			        	NodeResource r = nodeResources.get(index);
-			        	showResourcesStatus(commands[3], r);
-		        	}else {
+			        	showResourceStatus(commands[3], r);
+		        	}else if (index == -1){
 		        		for(NodeResource r : nodeResources)
-		        			showResourcesStatus(commands[3], r);
+		        			if(r.getPath().contains("sensor"))
+		        				showResourceStatus(commands[3], r);
 		        	}
 		        }else if(newCommand.contains(commands[5])) {
 		        	// showing the status of observed actuators
-		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
+		        	int index = checkIndex(newCommand);
 		        	if(index >= 0) {
 			        	NodeResource r = nodeResources.get(index);
-			        	showResourcesStatus(commands[5], r);
-		        	}else {
+			        	showResourceStatus(commands[5], r);
+		        	}else if (index == -1) {
 		        		for(NodeResource r : nodeResources)
-		        			showResourcesStatus(commands[5], r);
+		        			if(r.getPath().contains("actuator"))
+		        				showResourceStatus(commands[5], r);
 		        	}
 		        }else if(newCommand.contains(commands[1])) {
 		        	// switching ON the status of chosen bulb actuator
-		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
+		        	int index = checkIndex(newCommand);
 		        	if(index >= 0) {
 			        	NodeResource r = nodeResources.get(index);
 			        	switchBulbMode(commands[1],"mode",r);
-		        	}else {
+		        	}else if (index == -1) { // all bulbs ON
 		        		for(NodeResource r : nodeResources)
 		        			if(r.getPath().contains("actuator"))
 		        				switchBulbMode(commands[1],"mode",r);
-		        			else System.err.println("This is not an actuator");
 		        	}
 		        }else if(newCommand.contains(commands[2])) {
 		        	// switching OFF the status of chosen bulb actuator
-		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
+		        	int index = checkIndex(newCommand);
 		        	if(index >= 0) {
 			        	NodeResource r = nodeResources.get(index);
 			        	switchBulbMode(commands[2],"mode",r);
-		        	}else {
+		        	}else if (index == -1) { // all bulbs OFF
 		        		for(NodeResource r : nodeResources)
 		        			if(r.getPath().contains("actuator"))
 		        				switchBulbMode(commands[2],"mode",r);
-		        			else System.err.println("This is not an actuator");
 		        	}
 		        }else if(newCommand.contains(commands[4])) {
 		        	// switching bulb actuator in automatic mode
-		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
+		        	int index = checkIndex(newCommand);
 		        	if(index >= 0) {
 			        	NodeResource r = nodeResources.get(index);
 			        	switchBulbMode(commands[1],"automatic",r);
-		        	}else {
+		        	}else if (index == -1) { // all bulbs AUTOMATIC
 		        		for(NodeResource r : nodeResources)
 		        			if(r.getPath().contains("actuator"))
 		        				switchBulbMode(commands[1],"automatic",r);
-		        			else System.err.println("This is not an actuator");
 		        	}
 		        }else if(newCommand.contains(commands[6])) {
 		        	// switching bulb actuator in manual mode
-		        	int index = Integer.parseInt(newCommand.split(" ")[1]);
+		        	int index = checkIndex(newCommand);
 		        	if(index >= 0) {
 			        	NodeResource r = nodeResources.get(index);
 			        	switchBulbMode(commands[2],"automatic",r);
-		        	}else {
+		        	}else if (index == -1) { // all bulbs MANUAL
 		        		for(NodeResource r : nodeResources)
 		        			if(r.getPath().contains("actuator"))
 		        				switchBulbMode(commands[2],"automatic",r);
-		        			else System.err.println("This is not an actuator");
 		        	}
 		        }else if(newCommand.contentEquals(commands[7])) {
+		        	// exit the java application
+		        	System.out.println("BYE BYE :)");
 		        	System.exit(0);
 		        }else {
 		        	showCommandList();
@@ -123,41 +127,16 @@ public class Main {
 	
 	
 	public static void showAvailableResources() {
-		System.out.println("INDEX - RESOURCE INFO");
+		System.out.println("INDEX   RESOURCE INFO");
 		for(int i = 0; i < nodeResources.size(); i++) {
 			NodeResource r = nodeResources.get(i);
-        	System.out.println("("+i+")\t"+r.toString());
+        	System.out.println("("+i+")\t"+r.toDetailedString());
 		}
+		System.out.println("");
 	}
 	
 	
-	public static void switchBulbMode(String mode, String attribute, NodeResource res) {
-		CoapClient client = new CoapClient(res.getCoapURI());
-		if(res.getPath().contains("actuator")){
-			CoapResponse response = client.post(attribute+"="+mode, MediaTypeRegistry.TEXT_PLAIN);
-			String code = response.getCode().toString();
-			if(code.startsWith("2")) {
-				System.out.println("SUCCESS: the bulb "+attribute+" attribute is now "+mode);
-				if(attribute.contentEquals("mode")) {
-					long millis = System.currentTimeMillis();
-					Timestamp now = new Timestamp(millis - (millis%1000));
-					Map<Timestamp,String> v = res.getValues();
-					String newValue = (mode == "ON")? "1" : "0";
-					v.put(now, newValue);
-					res.setValues(v);
-				}
-			}else {
-				System.err.println("ERROR: response code "+code);
-			}
-    		
-		}else {
-			System.err.println("Can't switch bulb: This is not an actuator");
-		}
-	}
-	
-	
-	
-	public static void showResourcesStatus(String nodeType, NodeResource r) {
+	public static void showResourceStatus(String nodeType, NodeResource r) {
 		if(r.getPath().contains(nodeType)) {
 			int index = nodeResources.indexOf(r);
 			System.out.print("("+index+") "+r.toString());
@@ -167,9 +146,48 @@ public class Main {
 				System.out.println("\t\t\t\t"+key + "   " + v.get(key));
 			}
 			System.out.println("");
+		}else 
+			System.err.println("Wrong index: not "+nodeType);
+	}
+	
+	
+	public static void switchBulbMode(String mode, String attribute, NodeResource res) {
+		CoapClient client = new CoapClient(res.getCoapURI());
+		if(res.getPath().contains("actuator")){
+			CoapResponse response = client.post(attribute+"="+mode, MediaTypeRegistry.TEXT_PLAIN);
+			String code = response.getCode().toString();
+			if(code.startsWith("2")) {
+				System.out.println("[SUCCESS] The bulb "+attribute+" attribute is now "+mode);
+				if(attribute.contentEquals("mode")) {
+					long millis = System.currentTimeMillis();
+					Timestamp now = new Timestamp(millis - (millis%1000));
+					Map<Timestamp,String> v = res.getValues();
+					String newValue = (mode == "ON")? "1" : "0";
+					v.put(now, newValue);
+					res.setValues(v);
+				}
+			}else {
+				System.err.println("[ERROR] Response Code "+code);
+			}
+    		
+		}else{
+			System.err.println("Can't switch bulb: This is not an actuator");
 		}
 	}
 	
+	
+	private static int checkIndex(String command) {
+		String[] splitted = command.split(" ");
+		if(splitted.length > 1) {
+			int index = Integer.parseInt(splitted[1]);
+	    	if(index < nodeResources.size() && index >= -1) {
+	        	return index;
+	    	}else
+				System.err.println("PRESS ENTER AND TRY AGAIN");
+		}else
+			System.err.println("PRESS ENTER AND TRY AGAIN");
+		return -2;
+	}
 	
 	
 	public static void showCommandList() {
