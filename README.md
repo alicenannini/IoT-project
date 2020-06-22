@@ -9,4 +9,6 @@ IoT project based on Cooja simulations in Contiki and Californium
   > cd examples/rpl-border-router
   - Launch:
   > make TARGET=cooja connect-router-cooja
-3. Start the java application
+3. Start the java application:
+  > cd app
+  > java -jar target/APPLICATION.jar 
