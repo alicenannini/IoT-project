@@ -7,8 +7,8 @@ IoT project based on Cooja simulations in Contiki and a java application with Ca
 2. From terminal:
   - Start contiki-ng:
     > contikier
-  - Go in the rpl-br directory:
-    > cd examples/rpl-border-router
+  - Go in the border router directory:
+    > cd border-router
   - Launch:
     > make TARGET=cooja connect-router-cooja
   
