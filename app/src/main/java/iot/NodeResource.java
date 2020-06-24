@@ -5,42 +5,37 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class NodeResource {
-	private String path;
-	private String name;
-	private String nodeAddress;
+	private final String path;
+	private final String nodeAddress;
+	private final String info;
 	private Map<Timestamp,String> values = new TreeMap<Timestamp,String>();
 	
-	public NodeResource(String p, String n, String a) {
+	public NodeResource(String p, String a, String info) {
 		this.path = p;
-		this.name = n;
 		this.nodeAddress = a;
+		this.info = info;
 	}
 	
-	public void setPath(String p) { this.path = p; }
-	
-	public void setName(String n) { this.name = n; }
-	
-	public void setNodeAddress(String a) { this.nodeAddress = a; }
-	
-	public void setValues(Map<Timestamp,String> v) { 
+	synchronized public void setValues(Map<Timestamp,String> v) { 
 		// first remove from the list all values before the last 10 minutes
 		long lastHour = System.currentTimeMillis() - (60000 * 10);
-		for(Timestamp key : v.keySet()) {
-			   if( key.getTime() < lastHour) {
-			       v.remove(key);
-			   }
-		}
+		if(!v.isEmpty())
+			for(Timestamp key : v.keySet()) {
+				   if( key.getTime() < lastHour) {
+				       v.remove(key);
+				   }
+			}
 		// then update the list of the class
 		this.values = v; 
 	}
 	
 	public String getPath() { return this.path; }
 	
-	public String getName() { return this.name; }
-	
 	public String getNodeAddress() { return this.nodeAddress; }
 	
-	public Map<Timestamp,String> getValues(){ return this.values; }
+	public String getInfo() { return this.info; }
+	
+	synchronized public Map<Timestamp,String> getValues(){ return this.values; }
 	
 	public String getCoapURI() { return "coap://["+this.nodeAddress+"]:5683/"+this.path; }
 	
@@ -51,7 +46,7 @@ public class NodeResource {
 	}
 	
 	public String toDetailedString() {
-		return "Node: "+this.nodeAddress+", Path: "+this.path+", Name:"+this.name;
+		return "Node: "+this.nodeAddress+", Path: "+this.path+", "+this.info;
 	}
 	
 	@Override

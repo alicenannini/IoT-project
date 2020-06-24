@@ -28,9 +28,9 @@ public class ObservingHandler implements CoapHandler {
 					addResourceFromJsonMsg(response.getResponseText());
 				else if (response.getOptions().getAccept() == MediaTypeRegistry.TEXT_PLAIN)
 					addResourceFromTextMsg(response.getResponseText());
-				else System.err.println("[ERROR OBS] Accept option not supported");
+				else System.err.println("[OBSERVING HANDLER] Accept option not supported");
 			else {
-				System.err.println("[ERROR OBS] Response Code "+code);
+				System.err.println("[OBSERVING HANDLER] Response Code "+code);
 			}
 			
 		} catch (ParseException e) {
@@ -41,9 +41,12 @@ public class ObservingHandler implements CoapHandler {
 		
 	}
 
+	
 	public void onError() {
-		System.err.println("-Observing Failed --> "+client.getResource().toString());
+		//System.err.println("[Observing Failed] "+client.getResource().toString());
+		this.client.stopObserving();
 	}
+	
 	
 	private void addResourceFromJsonMsg(String response) throws ParseException {
 		String value; 
@@ -80,7 +83,8 @@ public class ObservingHandler implements CoapHandler {
 		
 		Map<Timestamp,String> resourceValues = client.getResource().getValues();
 		resourceValues.put(timestamp, value);
-		Main.nodeResources.get(Main.nodeResources.indexOf(client.getResource())).setValues(resourceValues);
+		int index = Main.nodeResources.indexOf(client.getResource());
+		Main.nodeResources.get(index).setValues(resourceValues);
 	}
 	
 	private void addResourceFromTextMsg(String response) {

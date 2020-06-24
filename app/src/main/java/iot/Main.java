@@ -36,11 +36,11 @@ public class Main {
 			try{
 				String newCommand = br.readLine();
 		        
-				// Printing a warning if there aren't registered resources yet
-				if(nodeResources.size() == 0)
+				if(nodeResources.size() == 0) 
+					// Printing a warning if there aren't registered resources yet
 					System.out.println("[WARNING] No registered resources yet");
 				
-		        if(newCommand.contentEquals(commands[0])) {
+		        if(newCommand.contains(commands[0])) {
 		        	// showing available resources
 		        	showAvailableResources();
 		        }else if(newCommand.contains(commands[3])) {
@@ -109,7 +109,7 @@ public class Main {
 		        			if(r.getPath().contains("actuator"))
 		        				switchBulbMode(commands[2],"automatic",r);
 		        	}
-		        }else if(newCommand.contentEquals(commands[7])) {
+		        }else if(newCommand.contains(commands[7])) {
 		        	// exit the java application
 		        	System.out.println("BYE BYE :)");
 		        	System.exit(0);
@@ -167,7 +167,7 @@ public class Main {
 					res.setValues(v);
 				}
 			}else {
-				System.err.println("[ERROR] Response Code "+code);
+				System.err.println("[MAIN] Response Code "+code);
 			}
     		
 		}else{
