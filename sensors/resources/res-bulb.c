@@ -11,8 +11,6 @@
 /* Component definition */
 #include "../dev/bulb.h"
 
-/* Observe period */
-#define PERIOD		(60 * CLOCK_SECOND)
 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void res_post_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
@@ -20,7 +18,7 @@ static void res_event_handler(void);
 
 /* An actuator, depending on the post variable mode, the light is activated or deactivated */
 EVENT_RESOURCE(res_bulb,
-         "title=\"Bulb controller: ?POST/PUT mode=ON|OFF automatic=ON|OFF\";obs;rt=\"Light Control\"",
+         "title=\"Bulb controller: ?POST/PUT mode=ON|OFF automatic=ON|OFF\";rt=\"Light Control\";obs",
          res_get_handler,
          res_post_put_handler,
          res_post_put_handler,

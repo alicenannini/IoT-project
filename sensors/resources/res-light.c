@@ -8,14 +8,12 @@
 
 /* Log configuration */
 #include "sys/log.h"
-#define LOG_MODULE "Light Sensor"
+#define LOG_MODULE "Light Sensor  "
 #define LOG_LEVEL LOG_LEVEL_DBG
 
 /* Component definition */
 #include "../dev/light-control.h"
 
-/* Observe period */
-#define PERIOD		(10 * CLOCK_SECOND)
 
 /* Counting how many times the periodic obs handler is called */
 static int32_t obs_counter = 0;
@@ -26,7 +24,7 @@ static void res_event_handler(void);
 
 /* A simple getter example. Returns the reading from light sensor with a simple etag */
 EVENT_RESOURCE(res_light,
-						   "title=\"Photosynthetic and solar light\";obs;rt=\"Light Sensor\"",
+						   "title=\"Photosynthetic and solar light\";rt=\"Light Sensor\";obs",
 						   res_get_handler,
 						   NULL,
 						   NULL,

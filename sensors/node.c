@@ -8,7 +8,7 @@
 /* Log configuration */
 #include "coap-log.h"
 #include "sys/log.h"
-#define LOG_MODULE "NODE"
+#define LOG_MODULE "NODE          "
 #define LOG_LEVEL LOG_LEVEL_INFO
 
 /* Interval for checking resources status */
@@ -21,7 +21,6 @@ extern coap_resource_t res_bulb;
 /* Components of the node */
 #include "./dev/bulb.h"
 #include "./dev/light-control.c"
-extern process_event_t AUTOMATIC_BULB_EVENT;
 
 /* Server IP and resource path */
 #define SERVER_EP "coap://[fd00::1]:4456"
