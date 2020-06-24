@@ -42,7 +42,7 @@ public class NodeResource {
 	@Override
 	public String toString() {
 		String[] addr = this.nodeAddress.split(":");
-		return "Node "+ addr[addr.length-1] +" "+ this.path;
+		return "Node "+ Integer.parseInt(addr[addr.length-1],16) +" "+ this.path;
 	}
 	
 	public String toDetailedString() {
