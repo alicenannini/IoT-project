@@ -1,5 +1,6 @@
 # IoT-project
-IoT project based on Cooja simulations in Contiki and a java application with Californium
+IoT project based on Cooja simulations in Contiki and a java application with Californium.
+Be sure to download the repository in the "contiki-ng" directory.
 
 
 1. Start the Cooja simulation
