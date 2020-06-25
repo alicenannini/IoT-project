@@ -42,7 +42,7 @@ public class ObservingHandler implements CoapHandler {
 
 	
 	public void onError() {
-		this.client.stopObserving();
+		System.err.println("[-Observing failed ----]");
 	}
 	
 	
