@@ -34,7 +34,6 @@ public class ObservingHandler implements CoapHandler {
 			}
 			
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
           
@@ -43,7 +42,6 @@ public class ObservingHandler implements CoapHandler {
 
 	
 	public void onError() {
-		//System.err.println("[Observing Failed] "+client.getResource().toString());
 		this.client.stopObserving();
 	}
 	
