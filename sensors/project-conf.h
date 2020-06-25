@@ -8,4 +8,7 @@
 /* Enable client-side support for COAP observe */
 #define COAP_OBSERVE_CLIENT 1
 
+/* Force button descriptions */
+#define BUTTON_HAL_CONF_WITH_DESCRIPTION 1
+
 #endif /* PROJECT_CONF_H_ */
