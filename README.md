@@ -15,4 +15,4 @@ IoT project based on Cooja simulations in Contiki and a java application with Ca
 3. Start the java application:
     > cd app
   
-    > java -jar target/APPLICATION.jar 
+    > java -jar target/app-0.0.1-SNAPSHOT.jar 
